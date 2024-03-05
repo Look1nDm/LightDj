@@ -26,6 +26,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     public Application create(Application application, String email) {
         User user = userService.getUserByEmail(email);
+        application.setUsername(user.getUsername());
         application.setStatus(Status.DRAFT);
         application.setUserId(user.getId());
         application.setDateCreatedApplication(LocalDateTime.now());
@@ -40,7 +41,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         Application applicationLastDraft = findLastDraftApplication(user.getApplications());
         User operator = userService.findOperator();
         applicationLastDraft.setStatus(Status.SEND);
-        operator.getApplications().add(applicationLastDraft);
+        operator.getOperatorApplications().add(applicationLastDraft);
         applicationRepository.save(applicationLastDraft);
     }
 
@@ -53,6 +54,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             updated = applicationsDraftToUser.stream()
                     .filter(app -> app.getId().equals(appId)).findFirst()
                     .orElseThrow(() -> new ApplicationNotFoundException("Обращение не найдено"));
+            updated.setUsername(user.getUsername());
             updated.setTextApplication(application.getTextApplication());
             updated.setPhoneNumber(application.getPhoneNumber());
             updated.setUsername(application.getUsername());
@@ -63,18 +65,71 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
         return updated;
     }
+
     @Override
     public List<Application> getAllApplicationsDesc(PageRequest pageRequest, String email) {
         User user = userService.getUserByEmail(email);
-        applicationRepository.findAllByUserIdDesc(pageRequest, user.getId());
-        return user.getApplications();
+        return applicationRepository.findAllByUserIdDesc(pageRequest, user.getId());
+
     }
 
     @Override
     public List<Application> getAllApplicationsAsc(PageRequest pageRequest, String email) {
         User user = userService.getUserByEmail(email);
-        applicationRepository.findAllByUserIdAsc(pageRequest, user.getId());
-        return user.getApplications();
+        return applicationRepository.findAllByUserIdAsc(pageRequest, user.getId());
+    }
+
+    @Override
+    public List<Application> getAllSendsApplicationsDesc(PageRequest pageRequest, String email, String username) {
+        User operator = userService.getUserByEmail(email);
+        List<Application> applications = applicationRepository
+                .findAllSendsByOperatorIdDesc(pageRequest, operator.getId(), username);
+        return findAllSendsApplication(applications);
+    }
+
+    @Override
+    public List<Application> getAllSendsApplicationsAsc(PageRequest pageRequest,
+                                                        String email,
+                                                        String username) {
+        User operator = userService.getUserByEmail(email);
+        List<Application> applications = applicationRepository
+                .findAllSendsByOperatorIdAsc(pageRequest, operator.getId(), username);
+        return findAllSendsApplication(applications);
+    }
+
+    @Override
+    public List<Application> getAllApplicationsUser(PageRequest pageRequest,
+                                                    String operatorEmail,
+                                                    String username) {
+        User operator = userService.getUserByEmail(operatorEmail);
+        return applicationRepository.findAllByUsername(pageRequest,
+                operator.getId(), username);
+    }
+
+    @Override
+    public Application getApplicationById(Long id) {
+        return applicationRepository.findById(id)
+                .orElseThrow(()-> new ApplicationNotFoundException("Заявки с таким id не найдено"));
+    }
+
+    @Override
+    public void setStatusApplication(Long id, Status status) {
+        Application application = getApplicationById(id);
+        switch (status){
+            case ACCEPTED -> {
+                application.setStatus(Status.ACCEPTED);
+                applicationRepository.save(application);
+            }
+            case REJECTED -> {
+                application.setStatus(Status.REJECTED);
+                applicationRepository.save(application);
+            }
+        }
+    }
+
+    private static List<Application> findAllSendsApplication(List<Application> applications) {
+        return applications.stream().filter(app -> app.getStatus().equals(Status.SEND))
+                .collect(Collectors.toList());
     }
 
     private static Application findLastDraftApplication(List<Application> list) {

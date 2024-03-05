@@ -14,9 +14,32 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     @Query(value = """
             select * from applications where user_id = :id 
             order by date_created_application desc""", nativeQuery = true)
-    List<Application> findAllByUserIdDesc(PageRequest pageRequest, @Param("id") Long id);
+    List<Application> findAllByUserIdDesc(PageRequest pageRequest,
+                                          @Param("id") Long id);
     @Query(value = """
             select * from applications where user_id = :id 
             order by date_created_application""", nativeQuery = true)
-    List<Application> findAllByUserIdAsc(PageRequest pageRequest, @Param("id") Long id);
+    List<Application> findAllByUserIdAsc(PageRequest pageRequest,
+                                         @Param("id") Long id);
+
+    @Query(value = """
+            select * from applications where operator_id = :id and username like concat('%',:username,'%') 
+            order by date_created_application desc""", nativeQuery = true)
+    List<Application> findAllSendsByOperatorIdDesc(PageRequest pageRequest,
+                                                   @Param("id") Long id,
+                                                   @Param("username") String username);
+
+    @Query(value = """
+            select * from applications where operator_id = :id and username like concat('%',:username,'%')
+            order by date_created_application""", nativeQuery = true)
+    List<Application> findAllSendsByOperatorIdAsc(PageRequest pageRequest,
+                                                  @Param("id") Long id,
+                                                  @Param("username") String username);
+
+    @Query(value = """
+            select * from applications where operator_id = :id and username like concat('%',:username,'%')
+            """, nativeQuery = true)
+    List<Application> findAllByUsername(PageRequest pageRequest,
+                                                  @Param("id") Long id,
+                                                  @Param("username") String username);
 }

@@ -1,11 +1,10 @@
 package com.example.lightdj.service;
 
 import com.example.lightdj.domain.application.Application;
-import com.example.lightdj.web.dto.ApplicationDto;
+import com.example.lightdj.domain.application.Status;
 import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
-import java.util.UUID;
 
 public interface ApplicationService {
     Application create(Application application, String email);
@@ -14,7 +13,18 @@ public interface ApplicationService {
 
     Application update(String email, Long appId, Application application);
 
-    List<Application> getAllApplicationsDesc (PageRequest pageRequest, String email);
+    List<Application> getAllApplicationsDesc(PageRequest pageRequest, String email);
 
     List<Application> getAllApplicationsAsc(PageRequest pageRequest, String email);
+
+    List<Application> getAllSendsApplicationsDesc(PageRequest pageRequest, String email, String username);
+
+    List<Application> getAllSendsApplicationsAsc(PageRequest pageRequest, String email, String username);
+
+    List<Application> getAllApplicationsUser(PageRequest pageRequest,String operatorName, String name);
+
+    Application getApplicationById(Long id);
+
+    void setStatusApplication(Long id, Status status);
+
 }

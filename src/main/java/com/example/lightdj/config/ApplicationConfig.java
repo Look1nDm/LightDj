@@ -106,6 +106,5 @@ public class ApplicationConfig {
                 .logoutUrl("/logout").invalidateHttpSession(true)
                         .deleteCookies("JSESSIONID"));
         return httpSecurity.build();
-
     }
 }

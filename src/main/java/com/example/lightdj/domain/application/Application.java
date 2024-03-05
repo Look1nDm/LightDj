@@ -26,4 +26,6 @@ public class Application implements Serializable {
     private LocalDateTime dateCreatedApplication;
     @Column(name = "user_id")
     private Long userId;
+    @Column(name = "operator_id")
+    private Long operatorId;
 }

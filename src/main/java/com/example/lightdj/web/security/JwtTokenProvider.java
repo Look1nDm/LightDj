@@ -69,20 +69,6 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    public JwtResponse refreshUserTokens(String refreshToken) {
-        JwtResponse jwtResponse = new JwtResponse();
-        if (!validateToken(refreshToken)) {
-            throw new AccessDeniedException();
-        } else {
-            Long userId = Long.valueOf(getId(refreshToken));
-            User user = userService.findUserById(userId);
-            jwtResponse.setId(userId);
-            jwtResponse.setEmail(user.getEmail());
-            jwtResponse.setAccessToken(createAccessToken(userId, user.getEmail(), user.getRoles()));
-            jwtResponse.setRefreshToken(createRefreshToken(userId, user.getEmail()));
-            return jwtResponse;
-        }
-    }
 
     public boolean validateToken(final String token) {
         Jws<Claims> claims = Jwts
@@ -91,15 +77,6 @@ public class JwtTokenProvider {
                 .build()
                 .parseClaimsJws(token);
         return !claims.getBody().getExpiration().before(new Date());
-    }
-
-    private String getId(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getId();
     }
 
     private String getUsername(String token) {
