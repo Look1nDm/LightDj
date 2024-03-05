@@ -16,6 +16,8 @@ public class User implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(name = "username")
+    private String username;
     @Column(name = "email")
     private String email;
     @Column(name = "password")
@@ -31,4 +33,8 @@ public class User implements Serializable {
     @JoinColumn(name = "user_id")
     @OneToMany(fetch = FetchType.EAGER)
     private List<Application> applications;
+
+    @JoinColumn(name = "operator_id")
+    @OneToMany(fetch = FetchType.EAGER)
+    private List<Application> operatorApplications;
 }
