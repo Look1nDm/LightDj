@@ -5,10 +5,13 @@ import com.example.lightdj.web.dto.auth.JwtRequest;
 import com.example.lightdj.web.dto.auth.JwtResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,6 +28,7 @@ import java.util.logging.Logger;
 public class AuthController {
 
     private final AuthService authService;
+    private final SecurityContextLogoutHandler securityContextLogoutHandler = new SecurityContextLogoutHandler();
 
     private final Logger logger = Logger.getLogger(AuthController.class.getName());
 
@@ -35,9 +39,12 @@ public class AuthController {
         return authService.login(loginRequest);
     }
     @PostMapping("/logout")
-    public void logout(HttpServletRequest request){
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null)
+    public void logout(Authentication authentication,
+                       HttpServletRequest request,
+                       HttpServletResponse response) {
+        if (authentication != null){
             request.getSession().invalidate();
+            securityContextLogoutHandler.logout(request, response, authentication);
+        }
     }
 }

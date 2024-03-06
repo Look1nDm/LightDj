@@ -1,6 +1,5 @@
 package com.example.lightdj.service;
 
-import com.example.lightdj.domain.user.Role;
 import com.example.lightdj.domain.user.User;
 
 import java.util.List;

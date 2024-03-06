@@ -41,12 +41,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public User findByUsername(String username) {
         return userRepository.findUserByUsername(username)
-                .orElseThrow(()-> new UserNotFoundException("Пользователь с таким именем не найден"));
+                .orElseThrow(() -> new UserNotFoundException("Пользователь с таким именем не найден"));
     }
 
     @Override
     public List<User> getAllUsers() {
-        return userRepository.findUsersByRoles(Role.USER);
+        return userRepository.findAll();
     }
 
     @Override

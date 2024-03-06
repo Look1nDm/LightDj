@@ -1,6 +1,5 @@
 package com.example.lightdj.repository;
 
-import com.example.lightdj.domain.application.Status;
 import com.example.lightdj.domain.user.Role;
 import com.example.lightdj.domain.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -20,6 +19,4 @@ public interface UserRepository extends JpaRepository<User, Long> {
             select * from users where username like concat('%',:username,'%')
             """, nativeQuery = true)
     Optional<User> findUserByUsername(@Param("username") String username);
-
-    List<User> findUsersByRoles(Role role);
 }

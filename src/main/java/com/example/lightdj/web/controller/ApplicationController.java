@@ -31,7 +31,7 @@ public class ApplicationController {
     @Operation(summary = "Создание обращения пользователем",
             description = "Создаем черновик нашего обращения")
     @PreAuthorize("@customSecurityExpression.canAccessUser()")
-    @PostMapping("/create")
+    @PostMapping()
     public ApplicationDto create(@RequestBody ApplicationDto dto) {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext()
                 .getAuthentication().getPrincipal();
@@ -109,9 +109,8 @@ public class ApplicationController {
     @Operation(summary = "Принимаем решение по заявке",
             description = "Устанавливаем статус заявке ACCEPTED/REJECTED")
     @PreAuthorize("@customSecurityExpression.canAccessOperator()")
-    @PutMapping("/accepted/{id},{status}")
-    public HttpStatus acceptedApplication(@PathVariable Long id,@PathVariable Status status){
-        applicationService.setStatusApplication(id, status);
-        return HttpStatus.OK;
+    @PutMapping("/status/{id},{status}")
+    public ApplicationDto acceptedApplication(@PathVariable Long id,@PathVariable Status status){
+        return applicationMapper.toDto(applicationService.setStatusApplication(id, status));
     }
 }

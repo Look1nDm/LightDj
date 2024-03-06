@@ -5,6 +5,7 @@ import com.example.lightdj.domain.application.Application;
 import com.example.lightdj.domain.application.Status;
 import com.example.lightdj.domain.exceptions.ApplicationNotFoundException;
 import com.example.lightdj.domain.exceptions.DontSuchSortedMethodException;
+import com.example.lightdj.domain.exceptions.IllegalArgumentStatusException;
 import com.example.lightdj.domain.exceptions.NotFoundDraftApplicationsException;
 import com.example.lightdj.domain.user.Role;
 import com.example.lightdj.domain.user.User;
@@ -120,17 +121,20 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public void setStatusApplication(Long id, Status status) {
+    public Application setStatusApplication(Long id, Status status) {
         Application application = getApplicationById(id);
         switch (status){
             case ACCEPTED -> {
                 application.setStatus(Status.ACCEPTED);
                 applicationRepository.save(application);
+                return application;
             }
             case REJECTED -> {
                 application.setStatus(Status.REJECTED);
                 applicationRepository.save(application);
+                return application;
             }
+            default -> throw new IllegalArgumentStatusException("Неверно указан возможный статус");
         }
     }
 
