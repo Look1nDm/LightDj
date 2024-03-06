@@ -44,6 +44,19 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(()-> new UserNotFoundException("Пользователь с таким именем не найден"));
     }
 
+    @Override
+    public List<User> getAllUsers() {
+        return userRepository.findUsersByRoles(Role.USER);
+    }
+
+    @Override
+    public User setStatus(Long id) {
+        User user = findUserById(id);
+        user.getRoles().clear();
+        user.getRoles().add(Role.OPERATOR);
+        return userRepository.save(user);
+    }
+
     private static User findFreeOperator(List<User> users){
         return users.stream()
                 .min(Comparator.comparing(u -> u.getOperatorApplications().size()))

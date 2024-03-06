@@ -1,9 +1,12 @@
 package com.example.lightdj.service.impl;
 
+import com.example.lightdj.config.sort.Sort;
 import com.example.lightdj.domain.application.Application;
 import com.example.lightdj.domain.application.Status;
 import com.example.lightdj.domain.exceptions.ApplicationNotFoundException;
+import com.example.lightdj.domain.exceptions.DontSuchSortedMethodException;
 import com.example.lightdj.domain.exceptions.NotFoundDraftApplicationsException;
+import com.example.lightdj.domain.user.Role;
 import com.example.lightdj.domain.user.User;
 import com.example.lightdj.repository.ApplicationRepository;
 import com.example.lightdj.service.ApplicationService;
@@ -67,33 +70,33 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public List<Application> getAllApplicationsDesc(PageRequest pageRequest, String email) {
+    public List<Application> getAllApplications(PageRequest pageRequest, String email, Sort sort) {
         User user = userService.getUserByEmail(email);
-        return applicationRepository.findAllByUserIdDesc(pageRequest, user.getId());
-
+        List<Application> applications;
+        switch (sort){
+            case ASC ->
+                applications = applicationRepository.findAllByUserIdAsc(pageRequest, user.getId());
+            case DESC ->
+                applications = applicationRepository.findAllByUserIdDesc(pageRequest, user.getId());
+            default -> throw new DontSuchSortedMethodException("Не выбран метод сортировки");
+        }
+        return applications;
     }
 
     @Override
-    public List<Application> getAllApplicationsAsc(PageRequest pageRequest, String email) {
-        User user = userService.getUserByEmail(email);
-        return applicationRepository.findAllByUserIdAsc(pageRequest, user.getId());
-    }
-
-    @Override
-    public List<Application> getAllSendsApplicationsDesc(PageRequest pageRequest, String email, String username) {
+    public List<Application> getAllSendsApplications(PageRequest pageRequest,
+                                                         String email,
+                                                         String username,
+                                                         Sort sort) {
         User operator = userService.getUserByEmail(email);
-        List<Application> applications = applicationRepository
-                .findAllSendsByOperatorIdDesc(pageRequest, operator.getId(), username);
-        return findAllSendsApplication(applications);
-    }
-
-    @Override
-    public List<Application> getAllSendsApplicationsAsc(PageRequest pageRequest,
-                                                        String email,
-                                                        String username) {
-        User operator = userService.getUserByEmail(email);
-        List<Application> applications = applicationRepository
-                .findAllSendsByOperatorIdAsc(pageRequest, operator.getId(), username);
+        List<Application> applications;
+        switch (sort){
+            case DESC -> applications = applicationRepository
+                    .findAllSendsByOperatorIdDesc(pageRequest, operator.getId(), username);
+            case ASC -> applications = applicationRepository
+                    .findAllSendsByOperatorIdAsc(pageRequest, operator.getId(), username);
+            default -> throw new DontSuchSortedMethodException("Не выбран метод сортировки");
+        }
         return findAllSendsApplication(applications);
     }
 
@@ -101,9 +104,13 @@ public class ApplicationServiceImpl implements ApplicationService {
     public List<Application> getAllApplicationsUser(PageRequest pageRequest,
                                                     String operatorEmail,
                                                     String username) {
-        User operator = userService.getUserByEmail(operatorEmail);
-        return applicationRepository.findAllByUsername(pageRequest,
-                operator.getId(), username);
+        User user = userService.getUserByEmail(operatorEmail);
+        if (!user.getRoles().contains(Role.ADMIN)){
+            return applicationRepository.findAllByUsername(pageRequest,
+                    user.getId(), username);
+        } else {
+            return applicationRepository.findAllApplications(pageRequest, username);
+        }
     }
 
     @Override

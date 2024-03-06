@@ -1,5 +1,6 @@
 package com.example.lightdj.web.controller;
 
+import com.example.lightdj.config.sort.Sort;
 import com.example.lightdj.domain.application.Application;
 import com.example.lightdj.domain.application.Status;
 import com.example.lightdj.service.ApplicationService;
@@ -11,6 +12,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +30,7 @@ public class ApplicationController {
 
     @Operation(summary = "Создание обращения пользователем",
             description = "Создаем черновик нашего обращения")
+    @PreAuthorize("@customSecurityExpression.canAccessUser()")
     @PostMapping("/create")
     public ApplicationDto create(@RequestBody ApplicationDto dto) {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext()
@@ -38,6 +41,7 @@ public class ApplicationController {
 
     @Operation(summary = "Оправка заявки пользователем оператору",
             description = "Оправка заявки со статусом черновик оператору")
+    @PreAuthorize("@customSecurityExpression.canAccessUser()")
     @PutMapping("/send")
     public HttpStatus sendApplication() {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext()
@@ -48,6 +52,7 @@ public class ApplicationController {
 
     @Operation(summary = "Радактирование заявки пользователем",
             description = "Радактирование заявки со статусом DRAFT")
+    @PreAuthorize("@customSecurityExpression.canAccessUser()")
     @PutMapping("/update/{appId}")
     public ApplicationDto updateApplicationDraft(@PathVariable @Parameter(description = "Id заявки") Long appId,
                                                  @RequestBody ApplicationDto applicationDto) {
@@ -58,53 +63,35 @@ public class ApplicationController {
     }
 
     @Operation(summary = "Отображение заявок пользователя",
-            description = "Выводим все заявки у пользователя начиная с самой поздей по дате")
-    @GetMapping("/allDesc")
-    public List<ApplicationDto> getAllApplicationToUserDesc(@RequestParam(defaultValue = "0") int page,
-                                                            @RequestParam(defaultValue = "5") int size) {
+            description = "Выводим все заявки у пользователя")
+    @PreAuthorize("@customSecurityExpression.canAccessUser()")
+    @GetMapping("/allAppUser/{sort}")
+    public List<ApplicationDto> getAllApplicationToUser(@RequestParam(defaultValue = "0") int page,
+                                                        @RequestParam(defaultValue = "5") int size,
+                                                        @PathVariable Sort sort) {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext()
                 .getAuthentication().getPrincipal();
-        return applicationMapper.toDto(applicationService.getAllApplicationsDesc(PageRequest.of(page, size)
-                , userDetails.getUsername()));
-    }
-
-    @Operation(summary = "Отображение заявок пользователя",
-            description = "Выводим все заявки у пользователя начания с самой ранней по дате")
-    @GetMapping("/allAsc")
-    public List<ApplicationDto> getAllApplicationToUserAsc(@RequestParam(defaultValue = "0") int page,
-                                                           @RequestParam(defaultValue = "5") int size) {
-        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext()
-                .getAuthentication().getPrincipal();
-        return applicationMapper.toDto(applicationService.getAllApplicationsAsc(PageRequest.of(page, size)
-                , userDetails.getUsername()));
-    }
-
-    @Operation(summary = "Смотрим все заявки на рассмотрении",
-            description = "Выводим все заявки, направленные оператору на рассмотрение начиная с самой поздней")
-    @GetMapping("/allSendsDesc/{username}")
-    public List<ApplicationDto> getAllSendsApplicationsDesc(@RequestParam(defaultValue = "0") int page,
-                                                            @RequestParam(defaultValue = "5") int size,
-                                                            @PathVariable String username) {
-        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext()
-                .getAuthentication().getPrincipal();
-        return applicationMapper.toDto(applicationService.getAllSendsApplicationsDesc(PageRequest.of(page, size)
-                , userDetails.getUsername(), username));
+        return applicationMapper.toDto(applicationService.getAllApplications(PageRequest.of(page, size)
+                , userDetails.getUsername(), sort));
     }
     @Operation(summary = "Смотрим все заявки на рассмотрении",
-            description = "Выводим все заявки, направленные оператору на рассмотрение начиная с самой ранней")
-    @GetMapping("/allSendsAsc/{username}")
-    public List<ApplicationDto> getAllSendsApplicationsAsc(@RequestParam(defaultValue = "0") int page,
+            description = "Выводим все заявки, направленные оператору на рассмотрение")
+    @PreAuthorize("@customSecurityExpression.canAccessOperator()")
+    @GetMapping("/allSends/{username},{sort}")
+    public List<ApplicationDto> getAllSendsApplications(@RequestParam(defaultValue = "0") int page,
                                                             @RequestParam(defaultValue = "5") int size,
-                                                           @PathVariable String username) {
+                                                            @PathVariable String username,
+                                                            @PathVariable Sort sort) {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext()
                 .getAuthentication().getPrincipal();
-        return applicationMapper.toDto(applicationService.getAllSendsApplicationsAsc(PageRequest.of(page, size)
-                , userDetails.getUsername(), username));
+        return applicationMapper.toDto(applicationService.getAllSendsApplications(PageRequest.of(page, size)
+                , userDetails.getUsername(), username, sort));
     }
     @Operation(summary = "Просмотр заявок по имени пользователя",
             description = "Выводим все заявки отправленные пользователем конкретно этому оператору")
-    @GetMapping("/allAppUser/{username}")
-    public List<ApplicationDto> getAllApplicationsToUser(@RequestParam(defaultValue = "0") int page,
+    @PreAuthorize("@customSecurityExpression.canAccessOperatorOrAdmin()")
+    @GetMapping("/allApplicationsUser/{username}")
+    public List<ApplicationDto> getAllApplicationsForUsername(@RequestParam(defaultValue = "0") int page,
                                                         @RequestParam(defaultValue = "5") int size,
                                                         @PathVariable String username){
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext()
@@ -114,12 +101,14 @@ public class ApplicationController {
     }
     @Operation(summary = "Просмотр заявки по id",
             description = "Выводим заявку по id")
+    @PreAuthorize("@customSecurityExpression.canAccessOperator()")
     @GetMapping("/get/{id}")
     public ApplicationDto getApplicationById(@PathVariable Long id){
         return applicationMapper.toDto(applicationService.getApplicationById(id));
     }
-    @Operation(summary = "Принимаем заявку",
-            description = "Устанавливаем статус заявке ACCEPTED")
+    @Operation(summary = "Принимаем решение по заявке",
+            description = "Устанавливаем статус заявке ACCEPTED/REJECTED")
+    @PreAuthorize("@customSecurityExpression.canAccessOperator()")
     @PutMapping("/accepted/{id},{status}")
     public HttpStatus acceptedApplication(@PathVariable Long id,@PathVariable Status status){
         applicationService.setStatusApplication(id, status);
