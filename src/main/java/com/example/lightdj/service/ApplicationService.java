@@ -1,5 +1,6 @@
 package com.example.lightdj.service;
 
+import com.example.lightdj.config.sort.Sort;
 import com.example.lightdj.domain.application.Application;
 import com.example.lightdj.domain.application.Status;
 import org.springframework.data.domain.PageRequest;
@@ -13,13 +14,11 @@ public interface ApplicationService {
 
     Application update(String email, Long appId, Application application);
 
-    List<Application> getAllApplicationsDesc(PageRequest pageRequest, String email);
+    List<Application> getAllApplications(PageRequest pageRequest, String email, Sort sort);
 
-    List<Application> getAllApplicationsAsc(PageRequest pageRequest, String email);
-
-    List<Application> getAllSendsApplicationsDesc(PageRequest pageRequest, String email, String username);
-
-    List<Application> getAllSendsApplicationsAsc(PageRequest pageRequest, String email, String username);
+    List<Application> getAllSendsApplications(PageRequest pageRequest,
+                                                  String email,
+                                                  String username, Sort sort);
 
     List<Application> getAllApplicationsUser(PageRequest pageRequest,String operatorName, String name);
 

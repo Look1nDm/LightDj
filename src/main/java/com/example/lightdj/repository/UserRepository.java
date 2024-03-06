@@ -20,4 +20,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
             select * from users where username like concat('%',:username,'%')
             """, nativeQuery = true)
     Optional<User> findUserByUsername(@Param("username") String username);
+
+    List<User> findUsersByRoles(Role role);
 }

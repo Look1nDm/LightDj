@@ -16,6 +16,7 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
             order by date_created_application desc""", nativeQuery = true)
     List<Application> findAllByUserIdDesc(PageRequest pageRequest,
                                           @Param("id") Long id);
+
     @Query(value = """
             select * from applications where user_id = :id 
             order by date_created_application""", nativeQuery = true)
@@ -40,6 +41,14 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
             select * from applications where operator_id = :id and username like concat('%',:username,'%')
             """, nativeQuery = true)
     List<Application> findAllByUsername(PageRequest pageRequest,
-                                                  @Param("id") Long id,
-                                                  @Param("username") String username);
+                                        @Param("id") Long id,
+                                        @Param("username") String username);
+
+    @Query(value = """
+            select * from applications where status in('SEND', 'ACCEPTED','REJECTED') 
+            and username like concat('%',:username,'%')
+            order by date_created_application
+            """, nativeQuery = true)
+    List<Application> findAllApplications(PageRequest pageRequest,
+                                          @Param("username") String username);
 }
