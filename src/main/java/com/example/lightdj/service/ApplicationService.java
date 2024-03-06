@@ -24,6 +24,6 @@ public interface ApplicationService {
 
     Application getApplicationById(Long id);
 
-    void setStatusApplication(Long id, Status status);
+    Application setStatusApplication(Long id, Status status);
 
 }

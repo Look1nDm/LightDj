@@ -22,8 +22,7 @@ public class UserController {
     private final UserMapper userMapper;
 
 
-    @Operation(summary = "Показать всех пользоватлей",
-            description = "Выводим всех пользователей со статусом USER")
+    @Operation(summary = "Показать всех пользоватлей")
     @GetMapping("/all")
     @PreAuthorize("@customSecurityExpression.canAccessAdmin()")
     public List<UserDto> getAllUsers() {

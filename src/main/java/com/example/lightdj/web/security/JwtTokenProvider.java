@@ -1,11 +1,7 @@
 package com.example.lightdj.web.security;
 
-import com.example.lightdj.domain.exceptions.AccessDeniedException;
 import com.example.lightdj.domain.user.Role;
-import com.example.lightdj.domain.user.User;
-import com.example.lightdj.service.UserService;
 import com.example.lightdj.service.props.JwtProperties;
-import com.example.lightdj.web.dto.auth.JwtResponse;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
@@ -32,7 +28,6 @@ public class JwtTokenProvider {
 
     private final JwtProperties jwtProperties;
     private final UserDetailsService userDetailsService;
-    private final UserService userService;
     private Key key;
 
     @PostConstruct
