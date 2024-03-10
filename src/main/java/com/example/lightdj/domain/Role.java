@@ -1,4 +1,4 @@
-package com.example.lightdj.domain.user;
+package com.example.lightdj.domain;
 
 public enum Role {
     USER, ADMIN, OPERATOR

@@ -102,7 +102,8 @@ public class ApplicationConfig {
                         UsernamePasswordAuthenticationFilter.class)
                 .logout(logout -> logout
                         .logoutUrl("/api/v1/auth/logout")
-                        .invalidateHttpSession(true));
+                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID"));
         return httpSecurity.build();
     }
 }

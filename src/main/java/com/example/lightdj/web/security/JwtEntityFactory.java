@@ -1,7 +1,8 @@
 package com.example.lightdj.web.security;
 
-import com.example.lightdj.domain.user.Role;
-import com.example.lightdj.domain.user.User;
+import com.example.lightdj.domain.Role;
+import com.example.lightdj.domain.User;
+import com.example.lightdj.domain.user.SimpleUser;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 

@@ -1,6 +1,6 @@
 package com.example.lightdj.web.controller;
 
-import com.example.lightdj.service.UserService;
+import com.example.lightdj.service.SimpleUserService;
 import com.example.lightdj.web.dto.UserDto;
 import com.example.lightdj.web.mappers.UserMapper;
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,7 +18,7 @@ import java.util.List;
 @Tag(name = "User controller", description = "User API")
 public class UserController {
 
-    private final UserService userService;
+    private final SimpleUserService simpleUserService;
     private final UserMapper userMapper;
 
 
@@ -26,7 +26,7 @@ public class UserController {
     @GetMapping("/all")
     @PreAuthorize("@customSecurityExpression.canAccessAdmin()")
     public List<UserDto> getAllUsers() {
-        return userMapper.toDto(userService.getAllUsers());
+        return userMapper.toDto(simpleUserService.getAllUsers());
     }
 
     @Operation(summary = "Изменение статуса пользователю",
@@ -34,7 +34,7 @@ public class UserController {
     @PutMapping("/setRole/{id}")
     @PreAuthorize("@customSecurityExpression.canAccessAdmin()")
     public HttpStatus setRoleUser(@PathVariable Long id) {
-        userService.setStatus(id);
+        simpleUserService.setStatus(id);
         return HttpStatus.OK;
     }
 }

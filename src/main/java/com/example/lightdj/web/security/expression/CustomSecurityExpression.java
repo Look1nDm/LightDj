@@ -1,9 +1,7 @@
 package com.example.lightdj.web.security.expression;
 
-import com.example.lightdj.domain.user.Role;
-import com.example.lightdj.domain.user.User;
-import com.example.lightdj.service.UserService;
-import com.example.lightdj.web.security.JwtEntity;
+import com.example.lightdj.domain.Role;
+import com.example.lightdj.service.SimpleUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -14,7 +12,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class CustomSecurityExpression {
 
-    private final UserService userService;
+    private final SimpleUserService simpleUserService;
 
     public boolean canAccessUser(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

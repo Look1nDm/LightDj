@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ApplicationRepository extends JpaRepository<Application, Long> {
@@ -51,4 +52,10 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
             """, nativeQuery = true)
     List<Application> findAllApplications(PageRequest pageRequest,
                                           @Param("username") String username);
+
+    @Query(value = """
+            select * from applications where status = 'SEND' 
+            and id = :id
+            """, nativeQuery = true)
+    Optional<Application> findByIdWithStatusSend(Long id);
 }
