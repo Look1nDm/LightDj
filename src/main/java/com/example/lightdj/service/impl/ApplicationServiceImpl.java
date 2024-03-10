@@ -7,11 +7,12 @@ import com.example.lightdj.domain.exceptions.ApplicationNotFoundException;
 import com.example.lightdj.domain.exceptions.DontSuchSortedMethodException;
 import com.example.lightdj.domain.exceptions.IllegalArgumentStatusException;
 import com.example.lightdj.domain.exceptions.NotFoundDraftApplicationsException;
-import com.example.lightdj.domain.user.Role;
-import com.example.lightdj.domain.user.User;
+import com.example.lightdj.domain.operator.Operator;
+import com.example.lightdj.domain.user.SimpleUser;
 import com.example.lightdj.repository.ApplicationRepository;
 import com.example.lightdj.service.ApplicationService;
-import com.example.lightdj.service.UserService;
+import com.example.lightdj.service.OperatorService;
+import com.example.lightdj.service.SimpleUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -25,25 +26,26 @@ import java.util.stream.Collectors;
 public class ApplicationServiceImpl implements ApplicationService {
 
     private final ApplicationRepository applicationRepository;
-    private final UserService userService;
+    private final SimpleUserService simpleUserService;
+    private final OperatorService operatorService;
 
     @Override
     public Application create(Application application, String email) {
-        User user = userService.getUserByEmail(email);
-        application.setUsername(user.getUsername());
+        SimpleUser simpleUser = simpleUserService.getByEmail(email);
+        application.setUsername(simpleUser.getUsername());
         application.setStatus(Status.DRAFT);
-        application.setUserId(user.getId());
+        application.setSimpleUserId(simpleUser);
         application.setDateCreatedApplication(LocalDateTime.now());
-        user.getApplications().add(application);
-        userService.update(user);
+        simpleUser.getApplications().add(application);
+        simpleUserService.update(simpleUser);
         return applicationRepository.save(application);
     }
 
     @Override
     public void addApplicationToOperator(String email) {
-        User user = userService.getUserByEmail(email);
-        Application applicationLastDraft = findLastDraftApplication(user.getApplications());
-        User operator = userService.findOperator();
+        SimpleUser simpleUser = simpleUserService.getByEmail(email);
+        Operator operator = operatorService.getOperator();
+        Application applicationLastDraft = findLastDraftApplication(simpleUser.getApplications());
         applicationLastDraft.setStatus(Status.SEND);
         operator.getOperatorApplications().add(applicationLastDraft);
         applicationRepository.save(applicationLastDraft);
@@ -51,14 +53,14 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public Application update(String email, Long appId, Application application) {
-        User user = userService.getUserByEmail(email);
-        List<Application> applicationsDraftToUser = findAllDraftApplication(user.getApplications());
+        SimpleUser simpleUser = simpleUserService.getByEmail(email);
+        List<Application> applicationsDraftToUser = findAllDraftApplication(simpleUser.getApplications());
         Application updated;
         if (!applicationsDraftToUser.isEmpty()) {
             updated = applicationsDraftToUser.stream()
                     .filter(app -> app.getId().equals(appId)).findFirst()
                     .orElseThrow(() -> new ApplicationNotFoundException("Обращение не найдено"));
-            updated.setUsername(user.getUsername());
+            updated.setUsername(simpleUser.getUsername());
             updated.setTextApplication(application.getTextApplication());
             updated.setPhoneNumber(application.getPhoneNumber());
             updated.setUsername(application.getUsername());
@@ -72,13 +74,11 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public List<Application> getAllApplications(PageRequest pageRequest, String email, Sort sort) {
-        User user = userService.getUserByEmail(email);
+        SimpleUser simpleUser = simpleUserService.getByEmail(email);
         List<Application> applications;
-        switch (sort){
-            case ASC ->
-                applications = applicationRepository.findAllByUserIdAsc(pageRequest, user.getId());
-            case DESC ->
-                applications = applicationRepository.findAllByUserIdDesc(pageRequest, user.getId());
+        switch (sort) {
+            case ASC -> applications = applicationRepository.findAllByUserIdAsc(pageRequest, simpleUser.getId());
+            case DESC -> applications = applicationRepository.findAllByUserIdDesc(pageRequest, simpleUser.getId());
             default -> throw new DontSuchSortedMethodException("Не выбран метод сортировки");
         }
         return applications;
@@ -86,12 +86,12 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public List<Application> getAllSendsApplications(PageRequest pageRequest,
-                                                         String email,
-                                                         String username,
-                                                         Sort sort) {
-        User operator = userService.getUserByEmail(email);
+                                                     String email,
+                                                     String username,
+                                                     Sort sort) {
+        Operator operator = operatorService.getByEmail(email);
         List<Application> applications;
-        switch (sort){
+        switch (sort) {
             case DESC -> applications = applicationRepository
                     .findAllSendsByOperatorIdDesc(pageRequest, operator.getId(), username);
             case ASC -> applications = applicationRepository
@@ -105,25 +105,21 @@ public class ApplicationServiceImpl implements ApplicationService {
     public List<Application> getAllApplicationsUser(PageRequest pageRequest,
                                                     String operatorEmail,
                                                     String username) {
-        User user = userService.getUserByEmail(operatorEmail);
-        if (!user.getRoles().contains(Role.ADMIN)){
-            return applicationRepository.findAllByUsername(pageRequest,
-                    user.getId(), username);
-        } else {
-            return applicationRepository.findAllApplications(pageRequest, username);
-        }
+        Operator operator = operatorService.getByEmail(operatorEmail);
+        return applicationRepository.findAllByUsername(pageRequest,
+                operator.getId(), username);
     }
 
     @Override
     public Application getApplicationById(Long id) {
-        return applicationRepository.findById(id)
-                .orElseThrow(()-> new ApplicationNotFoundException("Заявки с таким id не найдено"));
+        return applicationRepository.findByIdWithStatusSend(id)
+                .orElseThrow(() -> new ApplicationNotFoundException("Заявки с таким id не найдено"));
     }
 
     @Override
     public Application setStatusApplication(Long id, Status status) {
         Application application = getApplicationById(id);
-        switch (status){
+        switch (status) {
             case ACCEPTED -> {
                 application.setStatus(Status.ACCEPTED);
                 applicationRepository.save(application);

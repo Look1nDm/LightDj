@@ -17,10 +17,11 @@ public interface ApplicationService {
     List<Application> getAllApplications(PageRequest pageRequest, String email, Sort sort);
 
     List<Application> getAllSendsApplications(PageRequest pageRequest,
-                                                  String email,
-                                                  String username, Sort sort);
+                                              String email,
+                                              String username,
+                                              Sort sort);
 
-    List<Application> getAllApplicationsUser(PageRequest pageRequest,String operatorName, String name);
+    List<Application> getAllApplicationsUser(PageRequest pageRequest, String operatorName, String name);
 
     Application getApplicationById(Long id);
 

@@ -1,5 +1,7 @@
 package com.example.lightdj.domain.application;
 
+import com.example.lightdj.domain.operator.Operator;
+import com.example.lightdj.domain.user.SimpleUser;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -24,8 +26,10 @@ public class Application implements Serializable {
     private String phoneNumber;
     @Column(name = "date_created_application")
     private LocalDateTime dateCreatedApplication;
-    @Column(name = "user_id")
-    private Long userId;
-    @Column(name = "operator_id")
-    private Long operatorId;
+    @JoinColumn(name = "user_id")
+    @ManyToOne
+    private SimpleUser simpleUserId;
+    @JoinColumn(name = "operator_id")
+    @ManyToOne
+    private Operator operatorId;
 }

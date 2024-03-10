@@ -1,6 +1,6 @@
 package com.example.lightdj.web.security;
 
-import com.example.lightdj.domain.user.Role;
+import com.example.lightdj.domain.Role;
 import com.example.lightdj.service.props.JwtProperties;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;

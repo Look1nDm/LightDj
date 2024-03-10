@@ -74,43 +74,47 @@ public class ApplicationController {
         return applicationMapper.toDto(applicationService.getAllApplications(PageRequest.of(page, size)
                 , userDetails.getUsername(), sort));
     }
+
     @Operation(summary = "Смотрим все заявки на рассмотрении",
             description = "Выводим все заявки, направленные оператору на рассмотрение")
     @PreAuthorize("@customSecurityExpression.canAccessOperator()")
     @GetMapping("/allSends/{username},{sort}")
     public List<ApplicationDto> getAllSendsApplications(@RequestParam(defaultValue = "0") int page,
-                                                            @RequestParam(defaultValue = "5") int size,
-                                                            @PathVariable String username,
-                                                            @PathVariable Sort sort) {
+                                                        @RequestParam(defaultValue = "5") int size,
+                                                        @PathVariable String username,
+                                                        @PathVariable Sort sort) {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext()
                 .getAuthentication().getPrincipal();
         return applicationMapper.toDto(applicationService.getAllSendsApplications(PageRequest.of(page, size)
                 , userDetails.getUsername(), username, sort));
     }
+
     @Operation(summary = "Просмотр заявок по имени пользователя",
             description = "Выводим все заявки отправленные пользователем конкретно этому оператору")
     @PreAuthorize("@customSecurityExpression.canAccessOperatorOrAdmin()")
     @GetMapping("/allApplicationsUser/{username}")
     public List<ApplicationDto> getAllApplicationsForUsername(@RequestParam(defaultValue = "0") int page,
-                                                        @RequestParam(defaultValue = "5") int size,
-                                                        @PathVariable String username){
+                                                              @RequestParam(defaultValue = "5") int size,
+                                                              @PathVariable String username) {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext()
                 .getAuthentication().getPrincipal();
         return applicationMapper.toDto(applicationService.getAllApplicationsUser(PageRequest.of(page, size)
                 , userDetails.getUsername(), username));
     }
+
     @Operation(summary = "Просмотр заявки по id",
             description = "Выводим заявку по id")
     @PreAuthorize("@customSecurityExpression.canAccessOperator()")
     @GetMapping("/get/{id}")
-    public ApplicationDto getApplicationById(@PathVariable Long id){
+    public ApplicationDto getApplicationById(@PathVariable Long id) {
         return applicationMapper.toDto(applicationService.getApplicationById(id));
     }
+
     @Operation(summary = "Принимаем решение по заявке",
             description = "Устанавливаем статус заявке ACCEPTED/REJECTED")
     @PreAuthorize("@customSecurityExpression.canAccessOperator()")
     @PutMapping("/status/{id},{status}")
-    public ApplicationDto acceptedApplication(@PathVariable Long id,@PathVariable Status status){
+    public ApplicationDto acceptedApplication(@PathVariable Long id, @PathVariable Status status) {
         return applicationMapper.toDto(applicationService.setStatusApplication(id, status));
     }
 }

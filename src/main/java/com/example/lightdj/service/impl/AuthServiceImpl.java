@@ -1,6 +1,6 @@
 package com.example.lightdj.service.impl;
 
-import com.example.lightdj.domain.user.User;
+import com.example.lightdj.domain.User;
 import com.example.lightdj.service.AuthService;
 import com.example.lightdj.service.UserService;
 import com.example.lightdj.web.dto.auth.JwtRequest;
@@ -18,8 +18,8 @@ import java.util.logging.Logger;
 public class AuthServiceImpl implements AuthService {
 
     private final AuthenticationManager authenticationManager;
-    private final UserService userService;
     private final JwtTokenProvider jwtTokenProvider;
+    private final UserService userService;
 
     private final Logger logger = Logger.getLogger(AuthServiceImpl.class.getName());
 
@@ -29,7 +29,7 @@ public class AuthServiceImpl implements AuthService {
         JwtResponse jwtResponse = new JwtResponse();
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(),
                 loginRequest.getPassword()));
-        User user = userService.getUserByEmail(loginRequest.getEmail());
+        User user = userService.getByEmail(loginRequest.getEmail());
         jwtResponse.setId(user.getId());
         jwtResponse.setEmail(user.getEmail());
         jwtResponse.setAccessToken(jwtTokenProvider.createAccessToken(user.getId(),
